@@ -1,17 +1,45 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth/login')
+  }
+
+  async function signOut() {
+    'use server'
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/auth/login')
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <nav className="w-64 border-r border-gray-200 bg-white px-4 py-6">
+      <nav className="flex w-64 flex-col border-r border-gray-200 bg-white px-4 py-6">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-600">
-            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-6.386z" />
+            <svg
+              className="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-6.386z"
+              />
             </svg>
           </div>
           <span className="text-lg font-bold text-gray-900">Commfire</span>
@@ -32,6 +60,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {item.label}
             </Link>
           ))}
+        </div>
+
+        {/* User section */}
+        <div className="mt-auto border-t border-gray-200 pt-4">
+          <p className="mb-3 truncate px-3 text-xs text-gray-500">{user.email}</p>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+            >
+              <span>🚪</span>
+              Sign out
+            </button>
+          </form>
         </div>
       </nav>
 
