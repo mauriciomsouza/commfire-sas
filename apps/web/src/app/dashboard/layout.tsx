@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Flame, LayoutDashboard, Building2, Settings, LogOut } from 'lucide-react'
+import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Dashboard' }
@@ -16,12 +16,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/auth/login')
   }
 
+  // Fetch profile to determine role
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = profile?.role === 'platform_admin'
+
   async function signOut() {
     'use server'
     const supabase = await createClient()
     await supabase.auth.signOut()
     redirect('/auth/login')
   }
+
+  const navItems = [
+    { href: '/dashboard', label: 'Visão geral', icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: '/dashboard/buildings', label: 'Edifícios', icon: <Building2 className="h-4 w-4" /> },
+    { href: '/dashboard/settings', label: 'Configurações', icon: <Settings className="h-4 w-4" /> },
+  ]
 
   return (
     <div className="flex min-h-screen">
@@ -35,11 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </Link>
 
         <div className="space-y-1">
-          {[
-            { href: '/dashboard', label: 'Overview', icon: <LayoutDashboard className="h-4 w-4" /> },
-            { href: '/dashboard/buildings', label: 'Buildings', icon: <Building2 className="h-4 w-4" /> },
-            { href: '/dashboard/settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
-          ].map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -49,10 +60,28 @@ export default async function DashboardLayout({ children }: { children: React.Re
               {item.label}
             </Link>
           ))}
+
+          {isAdmin && (
+            <>
+              <div className="my-2 border-t border-gray-100" />
+              <Link
+                href="/dashboard/admin"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-orange-700 hover:bg-orange-50 transition-colors"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Administrador
+              </Link>
+            </>
+          )}
         </div>
 
         {/* User section */}
         <div className="mt-auto border-t border-gray-200 pt-4">
+          {isAdmin && (
+            <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+              <ShieldCheck className="h-3 w-3" /> Admin
+            </span>
+          )}
           <p className="mb-3 truncate px-3 text-xs text-gray-500">{user.email}</p>
           <form action={signOut}>
             <button
@@ -60,7 +89,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              Sign out
+              Sair
             </button>
           </form>
         </div>
