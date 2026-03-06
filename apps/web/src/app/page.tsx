@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Flame, Radio, Building2 } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -7,24 +8,7 @@ export default function HomePage() {
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-600 shadow-lg">
-            <svg
-              className="h-9 w-9 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-6.386z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1.001A3.75 3.75 0 0012 18z"
-              />
-            </svg>
+            <Flame className="h-9 w-9 text-white" strokeWidth={1.5} />
           </div>
         </div>
 
@@ -56,24 +40,24 @@ export default function HomePage() {
             {
               title: 'LoRa Mesh Detection',
               description: 'Multi-hop wireless mesh network for total building coverage',
-              icon: '📡',
+              icon: <Radio className="h-8 w-8 text-orange-600" />,
             },
             {
               title: 'Real-time Monitoring',
               description: 'Live dashboard with instant alarm notifications via Supabase Realtime',
-              icon: '🔥',
+              icon: <Flame className="h-8 w-8 text-orange-600" />,
             },
             {
               title: 'Multi-building SaaS',
               description: 'Manage multiple buildings and subscriptions from a single account',
-              icon: '🏢',
+              icon: <Building2 className="h-8 w-8 text-orange-600" />,
             },
           ].map((feature) => (
             <div
               key={feature.title}
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-left"
             >
-              <div className="mb-3 text-3xl">{feature.icon}</div>
+              <div className="mb-3">{feature.icon}</div>
               <h3 className="mb-2 font-semibold text-gray-900">{feature.title}</h3>
               <p className="text-sm text-gray-500">{feature.description}</p>
             </div>
