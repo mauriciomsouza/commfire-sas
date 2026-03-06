@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Layers, Radio, ScanSearch, Siren, Map } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Building' }
 
@@ -47,14 +48,14 @@ export default async function BuildingPage({ params }: Props) {
         {/* Stats */}
         <div className="lg:col-span-1 space-y-4">
           {[
-            { label: 'Floors', value: '—', icon: '📐' },
-            { label: 'Gateways', value: '—', icon: '📡' },
-            { label: 'Detectors', value: '—', icon: '🔎' },
-            { label: 'Active alarms', value: '0', icon: '🚨' },
+            { label: 'Floors', value: '—', icon: <Layers className="h-5 w-5 text-gray-500" /> },
+            { label: 'Gateways', value: '—', icon: <Radio className="h-5 w-5 text-gray-500" /> },
+            { label: 'Detectors', value: '—', icon: <ScanSearch className="h-5 w-5 text-gray-500" /> },
+            { label: 'Active alarms', value: '0', icon: <Siren className="h-5 w-5 text-gray-500" /> },
           ].map((stat) => (
             <div key={stat.label} className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-3">
-                <span className="text-xl">{stat.icon}</span>
+                {stat.icon}
                 <span className="text-sm font-medium text-gray-700">{stat.label}</span>
               </div>
               <span className="text-lg font-bold text-gray-900">{stat.value}</span>
@@ -76,7 +77,9 @@ function FloorPlanPlaceholder() {
   return (
     <div className="relative h-64 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
       <div className="text-center">
-        <div className="mb-2 text-4xl">🗺️</div>
+        <div className="mb-2 flex justify-center">
+          <Map className="h-10 w-10 text-gray-400" />
+        </div>
         <p className="text-sm font-medium text-gray-500">Upload a floor plan to visualize detectors</p>
         <button className="mt-3 text-xs text-orange-600 hover:underline">Upload floor plan</button>
       </div>

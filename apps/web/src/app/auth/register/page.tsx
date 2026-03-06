@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Flame, MailCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
@@ -44,7 +45,9 @@ export default function RegisterPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-md text-center">
-          <div className="mb-4 text-5xl">📬</div>
+          <div className="mb-4 flex justify-center">
+            <MailCheck className="h-12 w-12 text-orange-600" />
+          </div>
           <h2 className="text-2xl font-bold text-gray-900">Check your email</h2>
           <p className="mt-2 text-gray-500">
             We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
@@ -62,7 +65,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-orange-600">
-            🔥 Commfire SAS
+            <Flame className="h-6 w-6" /> Commfire SAS
           </Link>
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Create your account</h1>
           <p className="mt-1 text-sm text-gray-500">Start your free trial today</p>
