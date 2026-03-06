@@ -1,0 +1,38 @@
+{
+  "name": "@commfire/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Commfire SAS web dashboard – Next.js 15",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next"
+  },
+  "dependencies": {
+    "@commfire/types": "workspace:*",
+    "@commfire/ui": "workspace:*",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.39.3",
+    "clsx": "^2.1.0",
+    "next": "15.5.12",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "stripe": "^14.18.0",
+    "tailwind-merge": "^2.2.1",
+    "zustand": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "15.5.12",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}
