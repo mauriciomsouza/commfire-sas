@@ -7,7 +7,7 @@ IoT SaaS platform for wireless fire detection systems using LoRa mesh networks.
 ```
 commfire-sas/
 ├── apps/
-│   ├── web/            # Next.js 14 dashboard (SaaS onboarding + monitoring)
+│   ├── web/            # Next.js 15 dashboard (SaaS onboarding + monitoring)
 │   ├── gateway/        # Device ingestion runtime (LoRa mesh → backend)
 │   └── detector-sim/   # Virtual LoRa detector simulator
 ├── packages/
@@ -25,7 +25,7 @@ commfire-sas/
 | Layer | Technology |
 |---|---|
 | Monorepo | pnpm workspaces + Turborepo |
-| Web app | Next.js 14 (App Router), Tailwind CSS, TypeScript |
+| Web app | Next.js 15 (App Router), Tailwind CSS, TypeScript |
 | Auth & DB | Supabase (Auth, Postgres, Realtime, Storage) |
 | Billing | Stripe |
 | Gateway runtime | Node.js / TypeScript |
@@ -105,7 +105,7 @@ pnpm test
 
 ### Web (`apps/web`)
 
-Next.js 14 dashboard with:
+Next.js 15 dashboard with:
 - **Landing page** – product overview and call to action
 - **Auth** – sign in / register via Supabase Auth
 - **Dashboard** – building overview with live status

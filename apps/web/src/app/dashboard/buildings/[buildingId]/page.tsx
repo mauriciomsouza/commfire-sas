@@ -4,10 +4,11 @@ import Link from 'next/link'
 export const metadata: Metadata = { title: 'Building' }
 
 interface Props {
-  params: { buildingId: string }
+  params: Promise<{ buildingId: string }>
 }
 
-export default function BuildingPage({ params }: Props) {
+export default async function BuildingPage({ params }: Props) {
+  const { buildingId } = await params
   return (
     <div>
       <div className="mb-6">
@@ -17,7 +18,7 @@ export default function BuildingPage({ params }: Props) {
           <span className="text-gray-900 font-medium">Building details</span>
         </nav>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Building {params.buildingId}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Building {buildingId}</h1>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
             <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             Online
