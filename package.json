@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Commfire SAS – IoT SaaS platform for wireless fire detection systems",
   "scripts": {
+    "preinstall": "npx --yes only-allow pnpm",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "test": "turbo run test",

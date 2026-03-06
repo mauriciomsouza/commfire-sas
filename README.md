@@ -45,7 +45,10 @@ Each customer can have multiple buildings. Each building has its own subscriptio
 ### Prerequisites
 
 - Node.js ≥ 20
-- pnpm ≥ 9 (`npm install -g pnpm`)
+- pnpm ≥ 9 – install via [Corepack](https://nodejs.org/api/corepack.html) (bundled with Node.js):
+  ```bash
+  corepack enable
+  ```
 - A Supabase project
 - A Stripe account (for billing)
 
