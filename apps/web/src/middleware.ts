@@ -30,17 +30,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const { pathname } = request.nextUrl
+
   // Redirect unauthenticated users away from the dashboard
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  if (!user && pathname.startsWith('/dashboard')) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from the landing/auth pages
+  // Redirect authenticated users away from the landing/auth/subscribe pages
   if (
     user &&
-    (request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/auth/'))
+    (pathname === '/' || pathname.startsWith('/auth/') || pathname.startsWith('/subscribe'))
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
