@@ -28,8 +28,6 @@ export interface GatewayConfig {
   listenPort?: number
   /** Backend API base URL */
   backendUrl: string
-  /** Bearer token for backend auth */
-  backendToken: string
   /** How often (ms) to send a gateway heartbeat to the backend (default 60_000) */
   heartbeatIntervalMs?: number
   /** How many ms without a detector heartbeat before marking it offline (default 120_000) */
@@ -280,7 +278,6 @@ export class GatewayRuntime {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.cfg.backendToken}`,
         },
         body: JSON.stringify(body),
       })

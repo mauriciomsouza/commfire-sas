@@ -5,7 +5,7 @@
   "description": "Commfire SAS – IoT SaaS platform for wireless fire detection systems",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev --filter=@commfire/web --filter=@commfire/sim-server --parallel",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",

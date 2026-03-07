@@ -4,20 +4,12 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 /**
  * POST /api/gateway/events
- * Receives device events from gateway runtimes.
- * Validates bearer token, then inserts the event into Supabase device_events.
+ * Receives device events from gateway runtimes and inserts them into Supabase device_events.
  *
  * Expected body (DeviceEvent from @commfire/domain buildDeviceEvent):
  *   { id, detectorId (EUI), gatewayId (EUI), type, payload, receivedAt, processedAt }
  */
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const token = authHeader?.replace('Bearer ', '')
-
-  if (!token || token !== process.env.GATEWAY_SHARED_SECRET) {
-    return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, { status: 401 })
-  }
-
   let body: Record<string, unknown>
   try {
     body = await request.json()

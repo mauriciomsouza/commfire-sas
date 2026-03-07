@@ -10,13 +10,6 @@ import { createServiceClient } from '@/lib/supabase/service'
  *   { gatewayEui, timestamp, firmwareVersion, uptime, connectedDetectors, status }
  */
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const token = authHeader?.replace('Bearer ', '')
-
-  if (!token || token !== process.env.GATEWAY_SHARED_SECRET) {
-    return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, { status: 401 })
-  }
-
   let body: Record<string, unknown>
   try {
     body = await request.json()

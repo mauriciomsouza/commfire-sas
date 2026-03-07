@@ -33,8 +33,6 @@ export interface SimGatewayConfig {
   heartbeatIntervalMs?: number
   /** URL of the backend API to POST events to */
   backendUrl?: string
-  /** Bearer token for backend auth */
-  backendToken?: string
 }
 
 // ─── Virtual Detector ─────────────────────────────────────────────────────────

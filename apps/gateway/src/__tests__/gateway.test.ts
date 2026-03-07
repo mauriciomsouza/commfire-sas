@@ -17,7 +17,6 @@ function makeCfg(overrides = {}) {
   return {
     eui: GATEWAY_EUI,
     backendUrl: 'http://localhost:3000',
-    backendToken: 'test-token',
     ...overrides,
   }
 }

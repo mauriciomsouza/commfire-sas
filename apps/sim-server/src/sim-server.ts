@@ -37,7 +37,6 @@ interface SimEvent {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? ''
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:3000'
-const GATEWAY_SHARED_SECRET = process.env.GATEWAY_SHARED_SECRET ?? ''
 const HEARTBEAT_INTERVAL_MS = Number(process.env.HEARTBEAT_INTERVAL_MS ?? 30_000)
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS ?? 5_000)
 
@@ -68,9 +67,6 @@ export class SimServer {
   constructor() {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY env vars')
-    }
-    if (!GATEWAY_SHARED_SECRET) {
-      throw new Error('Missing GATEWAY_SHARED_SECRET env var')
     }
     this.supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -328,7 +324,6 @@ export class SimServer {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${GATEWAY_SHARED_SECRET}`,
       },
       body: JSON.stringify(body),
     })
