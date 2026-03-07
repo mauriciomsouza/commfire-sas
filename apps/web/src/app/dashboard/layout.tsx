@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck } from 'lucide-react'
+import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck, Users, Cpu } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Dashboard' }
@@ -38,6 +38,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: '/dashboard/settings', label: 'Configurações', icon: <Settings className="h-4 w-4" /> },
   ]
 
+  const adminNavItems = [
+    { href: '/dashboard/admin', label: 'Painel Admin', icon: <ShieldCheck className="h-4 w-4" /> },
+    { href: '/dashboard/admin/customers', label: 'Clientes', icon: <Users className="h-4 w-4" /> },
+    { href: '/dashboard/admin/devices', label: 'Dispositivos', icon: <Cpu className="h-4 w-4" /> },
+  ]
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -63,14 +69,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {isAdmin && (
             <>
-              <div className="my-2 border-t border-gray-100" />
-              <Link
-                href="/dashboard/admin"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-orange-700 hover:bg-orange-50 transition-colors"
-              >
-                <ShieldCheck className="h-4 w-4" />
+              <div className="my-3 border-t border-gray-100" />
+              <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
                 Administrador
-              </Link>
+              </p>
+              {adminNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-orange-700 hover:bg-orange-50 transition-colors"
+                >
+                  {item.icon}
+                  {item.label}
+                </Link>
+              ))}
             </>
           )}
         </div>
