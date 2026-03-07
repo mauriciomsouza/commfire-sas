@@ -709,11 +709,11 @@ function FloorPlanEditor({
         </div>
         <div className="flex-1 overflow-y-auto p-2">
           {/* Detectors */}
-          {localDetectors.length > 0 && (
+          {detectors.length > 0 && (
             <div className="mb-3">
               <p className="mb-1 px-1 text-xs text-gray-400">Detectores</p>
               <div className="space-y-0.5">
-                {localDetectors.map((det) => {
+                {detectors.map((det) => {
                   const isSelected = selected?.type === 'detector' && selected.id === det.id
                   const positionedHere = det.floor_id === floorId && det.pos_x != null
                   const positionedElsewhere =
@@ -768,11 +768,11 @@ function FloorPlanEditor({
           )}
 
           {/* Gateways */}
-          {localGateways.length > 0 && (
+          {gateways.length > 0 && (
             <div className="mb-3">
               <p className="mb-1 px-1 text-xs text-gray-400">Gateways</p>
               <div className="space-y-0.5">
-                {localGateways.map((gw) => {
+                {gateways.map((gw) => {
                   const isSelected = selected?.type === 'gateway' && selected.id === gw.id
                   const positionedHere = gw.floor_id === floorId && gw.pos_x != null
                   const positionedElsewhere =
@@ -827,11 +827,11 @@ function FloorPlanEditor({
           )}
 
           {/* Alarms */}
-          {localAlarms.length > 0 && (
+          {alarms.length > 0 && (
             <div className="mb-3">
               <p className="mb-1 px-1 text-xs text-gray-400">Alarmes</p>
               <div className="space-y-0.5">
-                {localAlarms.map((alarm) => {
+                {alarms.map((alarm) => {
                   const isSelected = selected?.type === 'alarm' && selected.id === alarm.id
                   const positionedHere = alarm.floor_id === floorId && alarm.pos_x != null
                   const positionedElsewhere =
@@ -885,7 +885,7 @@ function FloorPlanEditor({
             </div>
           )}
 
-          {localDetectors.length === 0 && localGateways.length === 0 && localAlarms.length === 0 && (
+          {detectors.length === 0 && gateways.length === 0 && alarms.length === 0 && (
             <p className="px-1 text-xs text-gray-400">Nenhum dispositivo cadastrado.</p>
           )}
         </div>
