@@ -59,10 +59,10 @@ export default async function BuildingPage({ params }: Props) {
     gatewayIds.length > 0
       ? supabase
           .from('device_events')
-          .select('id, type, received_at, payload')
+          .select('id, type, received_at, payload, detector_id, gateway_id')
           .in('gateway_id', gatewayIds)
           .order('received_at', { ascending: false })
-          .limit(20)
+          .limit(200)
       : Promise.resolve({ data: [] }),
   ])
 
