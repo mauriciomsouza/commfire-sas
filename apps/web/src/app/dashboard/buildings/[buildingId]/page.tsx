@@ -36,7 +36,7 @@ export default async function BuildingPage({ params }: Props) {
     supabase.from('floors').select('id, name, level, floor_plan_url').eq('building_id', buildingId).order('level'),
     supabase
       .from('gateways')
-      .select('id, name, eui, serial_number, status, firmware, last_seen_at, pos_x, pos_y')
+      .select('id, name, eui, serial_number, status, firmware, last_seen_at, pos_x, pos_y, floor_id')
       .eq('building_id', buildingId)
       .order('created_at'),
   ])
@@ -53,7 +53,7 @@ export default async function BuildingPage({ params }: Props) {
       : Promise.resolve({ data: [] }),
     supabase
       .from('alarms')
-      .select('id, name, serial_number, status, last_seen_at, floor_id')
+      .select('id, name, serial_number, status, last_seen_at, floor_id, pos_x, pos_y')
       .eq('building_id', buildingId)
       .order('created_at'),
     gatewayIds.length > 0

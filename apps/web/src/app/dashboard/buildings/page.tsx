@@ -20,8 +20,7 @@ export default async function BuildingsPage() {
     .select(
       `
       id, name, address, city, country,
-      gateways(id),
-      detectors:detectors(id)
+      gateways(id, detectors(id))
     `
     )
     .order('created_at', { ascending: false })
@@ -64,8 +63,12 @@ export default async function BuildingsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {buildings.map((building) => {
             const gatewayCount = Array.isArray(building.gateways) ? building.gateways.length : 0
-            const detectorCount = Array.isArray(building.detectors)
-              ? building.detectors.length
+            const detectorCount = Array.isArray(building.gateways)
+              ? building.gateways.reduce(
+                  (sum: number, gw: { detectors?: { id: string }[] }) =>
+                    sum + (Array.isArray(gw.detectors) ? gw.detectors.length : 0),
+                  0,
+                )
               : 0
             return (
               <Link
