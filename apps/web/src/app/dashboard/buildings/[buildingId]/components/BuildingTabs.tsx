@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
 import Link from 'next/link'
 import {
   Plus,
@@ -150,6 +150,9 @@ export function BuildingTabs({
   events,
 }: BuildingTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('Visão geral')
+  const [localDetectors, setLocalDetectors] = useState(detectors)
+  const [localGateways, setLocalGateways] = useState(gateways)
+  const [localAlarms, setLocalAlarms] = useState(alarms)
 
   return (
     <div>
@@ -197,12 +200,12 @@ export function BuildingTabs({
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <h3 className="mb-3 font-semibold text-gray-900">Estado dos detectores</h3>
-              {detectors.length === 0 ? (
+              {localDetectors.length === 0 ? (
                 <p className="text-sm text-gray-500">Nenhum detector cadastrado.</p>
               ) : (
                 <dl className="space-y-2 text-sm">
                   {(['normal', 'alarm', 'fault', 'offline'] as const).map((s) => {
-                    const count = detectors.filter((d) => d.status === s).length
+                    const count = localDetectors.filter((d) => d.status === s).length
                     if (count === 0) return null
                     return (
                       <div key={s} className="flex justify-between">
@@ -238,9 +241,10 @@ export function BuildingTabs({
               </div>
             ) : (
               <FloorPlanMap
-                floor={floors[0]}
-                detectors={detectors.filter((d) => d.floor_id === floors[0].id)}
-                gateways={gateways}
+                floors={floors}
+                detectors={localDetectors}
+                gateways={localGateways}
+                alarms={localAlarms}
               />
             )}
           </div>
@@ -491,9 +495,12 @@ export function BuildingTabs({
         <FloorPlanEditor
           buildingId={buildingId}
           floors={floors}
-          gateways={gateways}
-          detectors={detectors}
-          alarms={alarms}
+          gateways={localGateways}
+          setGateways={setLocalGateways}
+          detectors={localDetectors}
+          setDetectors={setLocalDetectors}
+          alarms={localAlarms}
+          setAlarms={setLocalAlarms}
         />
       )}
 
@@ -532,14 +539,20 @@ function FloorPlanEditor({
   buildingId,
   floors,
   gateways,
+  setGateways,
   detectors,
+  setDetectors,
   alarms,
+  setAlarms,
 }: {
   buildingId: string
   floors: Floor[]
   gateways: Gateway[]
+  setGateways: Dispatch<SetStateAction<Gateway[]>>
   detectors: Detector[]
+  setDetectors: Dispatch<SetStateAction<Detector[]>>
   alarms: Alarm[]
+  setAlarms: Dispatch<SetStateAction<Alarm[]>>
 }) {
   const [floorId, setFloorId] = useState<string>(floors[0]?.id ?? '')
   const [zoom, setZoom] = useState(1)
@@ -549,9 +562,6 @@ function FloorPlanEditor({
     type: 'detector' | 'gateway' | 'alarm'
     id: string
   } | null>(null)
-  const [localDetectors, setLocalDetectors] = useState(detectors)
-  const [localGateways, setLocalGateways] = useState(gateways)
-  const [localAlarms, setLocalAlarms] = useState(alarms)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
 
@@ -561,9 +571,9 @@ function FloorPlanEditor({
   const lastPanPoint = useRef({ x: 0, y: 0 })
 
   const floor = floors.find((f) => f.id === floorId)
-  const floorDetectors = localDetectors.filter((d) => d.floor_id === floorId && d.pos_x != null)
-  const floorGateways = localGateways.filter((g) => g.floor_id === floorId && g.pos_x != null)
-  const floorAlarms = localAlarms.filter((a) => a.floor_id === floorId && a.pos_x != null)
+  const floorDetectors = detectors.filter((d) => d.floor_id === floorId && d.pos_x != null)
+  const floorGateways = gateways.filter((g) => g.floor_id === floorId && g.pos_x != null)
+  const floorAlarms = alarms.filter((a) => a.floor_id === floorId && a.pos_x != null)
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
@@ -628,15 +638,15 @@ function FloorPlanEditor({
 
     const { type, id } = selected
     if (type === 'detector') {
-      setLocalDetectors((prev) =>
+      setDetectors((prev) =>
         prev.map((d) => (d.id === id ? { ...d, pos_x: posX, pos_y: posY, floor_id: floorId } : d)),
       )
     } else if (type === 'gateway') {
-      setLocalGateways((prev) =>
+      setGateways((prev) =>
         prev.map((g) => (g.id === id ? { ...g, pos_x: posX, pos_y: posY, floor_id: floorId } : g)),
       )
     } else {
-      setLocalAlarms((prev) =>
+      setAlarms((prev) =>
         prev.map((a) => (a.id === id ? { ...a, pos_x: posX, pos_y: posY, floor_id: floorId } : a)),
       )
     }
@@ -649,15 +659,15 @@ function FloorPlanEditor({
     id: string,
   ) => {
     if (type === 'detector') {
-      setLocalDetectors((prev) =>
+      setDetectors((prev) =>
         prev.map((d) => (d.id === id ? { ...d, pos_x: null, pos_y: null, floor_id: null } : d)),
       )
     } else if (type === 'gateway') {
-      setLocalGateways((prev) =>
+      setGateways((prev) =>
         prev.map((g) => (g.id === id ? { ...g, pos_x: null, pos_y: null, floor_id: null } : g)),
       )
     } else {
-      setLocalAlarms((prev) =>
+      setAlarms((prev) =>
         prev.map((a) => (a.id === id ? { ...a, pos_x: null, pos_y: null, floor_id: null } : a)),
       )
     }
@@ -971,7 +981,7 @@ function FloorPlanEditor({
                   {floorDetectors.map((det) => (
                     <button
                       key={det.id}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow transition-transform hover:scale-125 ${
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white shadow transition-transform hover:scale-125 ${
                         det.status === 'alarm'
                           ? 'animate-pulse bg-red-500'
                           : det.status === 'fault'
@@ -983,8 +993,8 @@ function FloorPlanEditor({
                       style={{
                         left: `${det.pos_x}%`,
                         top: `${det.pos_y}%`,
-                        width: '16px',
-                        height: '16px',
+                        width: '22px',
+                        height: '22px',
                       }}
                       title={`${det.name} – ${statusLabel(det.status)}`}
                       onClick={(e) => {
@@ -995,14 +1005,16 @@ function FloorPlanEditor({
                             : { type: 'detector', id: det.id },
                         )
                       }}
-                    />
+                    >
+                      <ScanSearch className="h-3 w-3 text-white" />
+                    </button>
                   ))}
 
                   {/* Gateway markers */}
                   {floorGateways.map((gw) => (
                     <button
                       key={gw.id}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-purple-500 shadow transition-transform hover:scale-125 ${
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white bg-purple-500 shadow transition-transform hover:scale-125 ${
                         selected?.type === 'gateway' && selected.id === gw.id
                           ? 'ring-2 ring-purple-400 ring-offset-1'
                           : ''
@@ -1010,8 +1022,8 @@ function FloorPlanEditor({
                       style={{
                         left: `${gw.pos_x}%`,
                         top: `${gw.pos_y}%`,
-                        width: '18px',
-                        height: '18px',
+                        width: '22px',
+                        height: '22px',
                       }}
                       title={`${gw.name} – ${statusLabel(gw.status)}`}
                       onClick={(e) => {
@@ -1022,14 +1034,16 @@ function FloorPlanEditor({
                             : { type: 'gateway', id: gw.id },
                         )
                       }}
-                    />
+                    >
+                      <Radio className="h-3 w-3 text-white" />
+                    </button>
                   ))}
 
                   {/* Alarm markers */}
                   {floorAlarms.map((alarm) => (
                     <button
                       key={alarm.id}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-red-600 shadow transition-transform hover:scale-125 ${
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white bg-red-600 shadow transition-transform hover:scale-125 ${
                         alarm.status === 'triggered' ? 'animate-pulse' : ''
                       } ${
                         selected?.type === 'alarm' && selected.id === alarm.id
@@ -1039,8 +1053,8 @@ function FloorPlanEditor({
                       style={{
                         left: `${alarm.pos_x}%`,
                         top: `${alarm.pos_y}%`,
-                        width: '16px',
-                        height: '16px',
+                        width: '22px',
+                        height: '22px',
                       }}
                       title={`${alarm.name} – ${statusLabel(alarm.status)}`}
                       onClick={(e) => {
@@ -1051,7 +1065,9 @@ function FloorPlanEditor({
                             : { type: 'alarm', id: alarm.id },
                         )
                       }}
-                    />
+                    >
+                      <Siren className="h-3 w-3 text-white" />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -1124,54 +1140,198 @@ function EmptyState({
 }
 
 function FloorPlanMap({
-  floor,
+  floors,
   detectors,
+  gateways,
+  alarms,
 }: {
-  floor: Floor
+  floors: Floor[]
   detectors: Detector[]
   gateways: Gateway[]
+  alarms: Alarm[]
 }) {
+  const [floorId, setFloorId] = useState(floors[0]?.id ?? '')
+  const [zoom, setZoom] = useState(1)
+  const [panX, setPanX] = useState(0)
+  const [panY, setPanY] = useState(0)
+  const isPanning = useRef(false)
+  const lastPanPoint = useRef({ x: 0, y: 0 })
+
+  const floor = floors.find((f) => f.id === floorId)
+  const floorDetectors = detectors.filter((d) => d.floor_id === floorId && d.pos_x != null)
+  const floorGateways = gateways.filter((g) => g.floor_id === floorId && g.pos_x != null)
+  const floorAlarms = alarms.filter((a) => a.floor_id === floorId && a.pos_x != null)
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15
+    setZoom((prev) => Math.max(0.25, Math.min(6, prev * factor)))
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isPanning.current = true
+    lastPanPoint.current = { x: e.clientX, y: e.clientY }
+    e.preventDefault()
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning.current) return
+    const dx = e.clientX - lastPanPoint.current.x
+    const dy = e.clientY - lastPanPoint.current.y
+    lastPanPoint.current = { x: e.clientX, y: e.clientY }
+    setPanX((prev) => prev + dx)
+    setPanY((prev) => prev + dy)
+  }
+
+  const handleMouseUp = () => {
+    isPanning.current = false
+  }
+
+  if (!floor) return null
+
   return (
-    <div className="relative h-64 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-      {floor.floor_plan_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={floor.floor_plan_url}
-          alt={`Planta – ${floor.name}`}
-          className="h-full w-full object-contain"
-        />
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
-            <Map className="mx-auto mb-2 h-10 w-10 text-gray-400" />
-            <p className="text-sm text-gray-500">{floor.name} – sem planta carregada</p>
-          </div>
-        </div>
-      )}
-      {/* Detector overlays */}
-      {detectors.map((det) => {
-        if (det.pos_x == null || det.pos_y == null) return null
-        return (
-          <div
-            key={det.id}
-            className="absolute"
-            style={{ left: `${det.pos_x}%`, top: `${det.pos_y}%` }}
-            title={`${det.name} – ${statusLabel(det.status)}`}
+    <div className="space-y-2">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-2">
+        <select
+          value={floorId}
+          onChange={(e) => {
+            setFloorId(e.target.value)
+            setZoom(1)
+            setPanX(0)
+            setPanY(0)
+          }}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          {floors.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name} (Nível {f.level})
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setZoom((z) => Math.min(6, z * 1.25))}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+            title="Zoom in"
           >
-            <div
-              className={`h-4 w-4 rounded-full border-2 border-white shadow ${
-                det.status === 'alarm'
-                  ? 'animate-pulse bg-red-500'
-                  : det.status === 'fault'
-                    ? 'bg-yellow-500'
-                    : det.status === 'offline'
-                      ? 'bg-gray-400'
-                      : 'bg-green-500'
-              }`}
-            />
+            <ZoomIn className="h-4 w-4" />
+          </button>
+          <span className="min-w-[3rem] text-center text-xs text-gray-500">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            onClick={() => setZoom((z) => Math.max(0.25, z / 1.25))}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+            title="Zoom out"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => {
+              setZoom(1)
+              setPanX(0)
+              setPanY(0)
+            }}
+            className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 hover:bg-gray-50"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Canvas */}
+      <div
+        className={`relative h-64 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 ${floor.floor_plan_url ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {floor.floor_plan_url ? (
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+              transformOrigin: '0 0',
+            }}
+          >
+            <div className="relative select-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={floor.floor_plan_url}
+                alt={`Planta – ${floor.name}`}
+                draggable={false}
+                className="block"
+                style={{ maxWidth: '900px', maxHeight: '220px' }}
+              />
+
+              {/* Detector markers */}
+              {floorDetectors.map((det) => {
+                if (det.pos_x == null || det.pos_y == null) return null
+                return (
+                  <div
+                    key={det.id}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white shadow ${
+                      det.status === 'alarm'
+                        ? 'animate-pulse bg-red-500'
+                        : det.status === 'fault'
+                          ? 'bg-yellow-500'
+                          : det.status === 'offline'
+                            ? 'bg-gray-400'
+                            : 'bg-green-500'
+                    }`}
+                    style={{ left: `${det.pos_x}%`, top: `${det.pos_y}%`, width: '20px', height: '20px' }}
+                    title={`${det.name} – ${statusLabel(det.status)}`}
+                  >
+                    <ScanSearch className="h-2.5 w-2.5 text-white" />
+                  </div>
+                )
+              })}
+
+              {/* Gateway markers */}
+              {floorGateways.map((gw) => {
+                if (gw.pos_x == null || gw.pos_y == null) return null
+                return (
+                  <div
+                    key={gw.id}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white bg-purple-500 shadow"
+                    style={{ left: `${gw.pos_x}%`, top: `${gw.pos_y}%`, width: '20px', height: '20px' }}
+                    title={`${gw.name} – ${statusLabel(gw.status)}`}
+                  >
+                    <Radio className="h-2.5 w-2.5 text-white" />
+                  </div>
+                )
+              })}
+
+              {/* Alarm markers */}
+              {floorAlarms.map((alarm) => {
+                if (alarm.pos_x == null || alarm.pos_y == null) return null
+                return (
+                  <div
+                    key={alarm.id}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white bg-red-600 shadow ${
+                      alarm.status === 'triggered' ? 'animate-pulse' : ''
+                    }`}
+                    style={{ left: `${alarm.pos_x}%`, top: `${alarm.pos_y}%`, width: '20px', height: '20px' }}
+                    title={`${alarm.name} – ${statusLabel(alarm.status)}`}
+                  >
+                    <Siren className="h-2.5 w-2.5 text-white" />
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        )
-      })}
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <Map className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+              <p className="text-sm text-gray-500">{floor.name} – sem planta carregada</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
