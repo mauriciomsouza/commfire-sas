@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck, Users, Cpu } from 'lucide-react'
+import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck, Users, Cpu, FlaskConical } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Dashboard' }
@@ -42,6 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: '/dashboard/admin', label: 'Painel Admin', icon: <ShieldCheck className="h-4 w-4" /> },
     { href: '/dashboard/admin/customers', label: 'Clientes', icon: <Users className="h-4 w-4" /> },
     { href: '/dashboard/admin/devices', label: 'Dispositivos', icon: <Cpu className="h-4 w-4" /> },
+    { href: '/dashboard/admin/simulation', label: 'Simulação', icon: <FlaskConical className="h-4 w-4" /> },
   ]
 
   return (

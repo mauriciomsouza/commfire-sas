@@ -1,0 +1,23 @@
+{
+  "name": "@commfire/sim-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Commfire simulation server – reads virtual devices from Supabase, sends heartbeats and processes sim_events from the admin panel",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --dts",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
