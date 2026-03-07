@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
+import { useState, useRef, useMemo, type Dispatch, type SetStateAction } from 'react'
 import Link from 'next/link'
 import {
   Plus,
@@ -66,6 +66,14 @@ interface Event {
   type: string
   received_at: string
   payload: Record<string, unknown>
+  detector_id: string | null
+  gateway_id: string | null
+}
+
+interface DeviceFilter {
+  type: 'gateway' | 'detector'
+  id: string
+  name: string
 }
 
 interface BuildingTabsProps {
@@ -150,6 +158,34 @@ export function BuildingTabs({
   events,
 }: BuildingTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('Visão geral')
+  const [activeFilter, setActiveFilter] = useState<DeviceFilter | null>(null)
+
+  const goToEvents = (filter: DeviceFilter | null) => {
+    setActiveFilter(filter)
+    setActiveTab('Eventos')
+  }
+
+  const gatewayMap = useMemo(
+    () => gateways.reduce<Record<string, Gateway>>((acc, g) => ({ ...acc, [g.id]: g }), {}),
+    [gateways],
+  )
+
+  const detectorMap = useMemo(
+    () => detectors.reduce<Record<string, Detector>>((acc, d) => ({ ...acc, [d.id]: d }), {}),
+    [detectors],
+  )
+
+  const filteredEvents = useMemo(
+    () =>
+      activeFilter
+        ? events.filter((evt) =>
+            activeFilter.type === 'gateway'
+              ? evt.gateway_id === activeFilter.id
+              : evt.detector_id === activeFilter.id,
+          )
+        : events,
+    [events, activeFilter],
+  )
   const [localDetectors, setLocalDetectors] = useState(detectors)
   const [localGateways, setLocalGateways] = useState(gateways)
   const [localAlarms, setLocalAlarms] = useState(alarms)
@@ -337,15 +373,16 @@ export function BuildingTabs({
           ) : (
             <div className="space-y-3">
               {gateways.map((gw) => (
-                <div
+                <button
                   key={gw.id}
-                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                  onClick={() => goToEvents({ type: 'gateway', id: gw.id, name: gw.name })}
+                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100">
                       <Radio className="h-4 w-4 text-purple-600" />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="font-medium text-gray-900">{gw.name}</p>
                       <p className="font-mono text-xs text-gray-500">{gw.eui}</p>
                       {gw.serial_number && (
@@ -362,8 +399,9 @@ export function BuildingTabs({
                     {gw.firmware && (
                       <span className="text-xs text-gray-400">fw {gw.firmware}</span>
                     )}
+                    <span className="text-xs text-gray-400">Ver eventos →</span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -398,15 +436,16 @@ export function BuildingTabs({
           ) : (
             <div className="space-y-3">
               {detectors.map((det) => (
-                <div
+                <button
                   key={det.id}
-                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                  onClick={() => goToEvents({ type: 'detector', id: det.id, name: det.name })}
+                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-100">
                       <ScanSearch className="h-4 w-4 text-orange-600" />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="font-medium text-gray-900">{det.name}</p>
                       <p className="font-mono text-xs text-gray-500">{det.eui}</p>
                       {det.serial_number && (
@@ -427,8 +466,9 @@ export function BuildingTabs({
                       </span>
                     )}
                     <span className="text-xs text-gray-400">{det.type}</span>
+                    <span className="text-xs text-gray-400">Ver eventos →</span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -463,27 +503,31 @@ export function BuildingTabs({
           ) : (
             <div className="space-y-3">
               {alarms.map((alarm) => (
-                <div
+                <button
                   key={alarm.id}
-                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                  onClick={() => setActiveTab('Eventos')}
+                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
                       <Siren className="h-4 w-4 text-red-600" />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="font-medium text-gray-900">{alarm.name}</p>
                       {alarm.serial_number && (
                         <p className="text-xs text-gray-400">S/N: {alarm.serial_number}</p>
                       )}
                     </div>
                   </div>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColor(alarm.status)}`}
-                  >
-                    {statusLabel(alarm.status)}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColor(alarm.status)}`}
+                    >
+                      {statusLabel(alarm.status)}
+                    </span>
+                    <span className="text-xs text-gray-400">Ver eventos →</span>
+                  </div>
+                </button>
               ))}
             </div>
           )}
@@ -507,25 +551,52 @@ export function BuildingTabs({
       {/* Events */}
       {activeTab === 'Eventos' && (
         <div>
-          {events.length === 0 ? (
+          {activeFilter && (
+            <div className="mb-4 flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-4 py-2">
+              <span className="text-sm text-orange-800">
+                Filtrando eventos de: <strong>{activeFilter.name}</strong>
+              </span>
+              <button
+                onClick={() => setActiveFilter(null)}
+                className="ml-4 text-xs font-medium text-orange-600 hover:text-orange-800"
+              >
+                ✕ Limpar filtro
+              </button>
+            </div>
+          )}
+          {filteredEvents.length === 0 ? (
             <EmptyState
               icon={<Activity className="h-10 w-10 text-gray-400" />}
               title="Nenhum evento registrado"
-              description="Os eventos de alarme, falha e heartbeat serão exibidos aqui em tempo real."
+              description={
+                activeFilter
+                  ? `Nenhum evento encontrado para ${activeFilter.name}.`
+                  : 'Os eventos de alarme, falha e heartbeat serão exibidos aqui em tempo real.'
+              }
             />
           ) : (
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="divide-y divide-gray-100">
-                {events.map((evt) => (
-                  <div key={evt.id} className="flex items-center gap-4 px-4 py-3">
-                    <span className="w-40 shrink-0 text-sm font-medium text-gray-900">
-                      {eventLabel(evt.type)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(evt.received_at).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                ))}
+                {filteredEvents.map((evt) => {
+                  const gatewayName = evt.gateway_id ? gatewayMap[evt.gateway_id]?.name : null
+                  const detectorName = evt.detector_id ? detectorMap[evt.detector_id]?.name : null
+                  const deviceName = detectorName ?? gatewayName
+                  return (
+                    <div key={evt.id} className="flex items-center gap-4 px-4 py-3">
+                      <span className="w-40 shrink-0 text-sm font-medium text-gray-900">
+                        {eventLabel(evt.type)}
+                      </span>
+                      {deviceName && (
+                        <span className="w-40 shrink-0 truncate text-xs text-gray-600">
+                          {deviceName}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-500">
+                        {new Date(evt.received_at).toLocaleString('pt-BR')}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
