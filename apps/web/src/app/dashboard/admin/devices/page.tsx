@@ -137,9 +137,7 @@ export default async function AdminDevicesPage() {
             serial: g.serial_number,
             isVirtual: g.is_virtual,
             status: g.status,
-            location: Array.isArray(g.buildings)
-              ? (g.buildings[0] as { name: string })?.name ?? '—'
-              : (g.buildings as { name: string } | null)?.name ?? '—',
+            location: normalizeRelation<{ name: string }>(g.buildings)?.name ?? '—',
             extra: null,
           })) ?? []
         }
@@ -151,7 +149,7 @@ export default async function AdminDevicesPage() {
         icon={<ScanSearch className="h-5 w-5 text-orange-500" />}
         devices={
           detectors?.map((d) => {
-            const gw = Array.isArray(d.gateways) ? d.gateways[0] : d.gateways as { name: string } | null
+            const gw = normalizeRelation<{ name: string }>(d.gateways)
             return {
               id: d.id,
               name: d.name,
@@ -178,9 +176,7 @@ export default async function AdminDevicesPage() {
             serial: a.serial_number,
             isVirtual: a.is_virtual,
             status: a.status,
-            location: Array.isArray(a.buildings)
-              ? (a.buildings[0] as { name: string })?.name ?? '—'
-              : (a.buildings as { name: string } | null)?.name ?? '—',
+            location: normalizeRelation<{ name: string }>(a.buildings)?.name ?? '—',
             extra: null,
           })) ?? []
         }
@@ -198,6 +194,11 @@ interface DeviceRow {
   status: string
   location: string
   extra: string | null
+}
+
+function normalizeRelation<T>(relation: T | T[] | null | undefined): T | null {
+  if (!relation) return null
+  return Array.isArray(relation) ? (relation[0] ?? null) : relation
 }
 
 function DeviceTable({

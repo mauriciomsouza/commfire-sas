@@ -31,8 +31,15 @@ export default function NewFloorPage({ params }: Props) {
     let floorPlanUrl: string | null = null
 
     if (file) {
+      const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'pdf']
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        setError('Formato de arquivo não suportado. Use PNG, JPG, SVG ou PDF.')
+        setLoading(false)
+        return
+      }
+
       setUploading(true)
-      const ext = file.name.split('.').pop()
       const path = `floor-plans/${buildingId}/${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage
         .from('floor-plans')

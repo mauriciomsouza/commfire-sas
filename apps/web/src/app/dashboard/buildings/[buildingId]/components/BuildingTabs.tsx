@@ -314,7 +314,7 @@ export function BuildingTabs({
             <EmptyState
               icon={<Radio className="h-10 w-10 text-gray-400" />}
               title="Nenhum gateway cadastrado"
-              description="Adicione um gateway para conectar detectores e gateways ao sistema."
+              description="Adicione um gateway para conectar detectores ao sistema de monitoramento."
               action={
                 <Link
                   href={`/dashboard/buildings/${buildingId}/gateways/new`}
@@ -494,7 +494,7 @@ export function BuildingTabs({
               <div className="divide-y divide-gray-100">
                 {events.map((evt) => (
                   <div key={evt.id} className="flex items-center gap-4 px-4 py-3">
-                    <span className="w-40 shrink-0 font-medium text-sm text-gray-900">
+                    <span className="w-40 shrink-0 text-sm font-medium text-gray-900">
                       {eventLabel(evt.type)}
                     </span>
                     <span className="text-xs text-gray-500">

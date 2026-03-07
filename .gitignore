@@ -37,3 +37,6 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+
+# npm lock file (use pnpm-lock.yaml instead)
+package-lock.json

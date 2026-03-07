@@ -76,7 +76,11 @@ export function AddVirtualDeviceForm() {
         status: 'offline',
         firmware: 'virtual-1.0.0',
       })
-      if (err) { setError(err.message); setLoading(false); return }
+      if (err) {
+        setError(err.message)
+        setLoading(false)
+        return
+      }
     } else if (deviceType === 'detector') {
       // Need a gateway in the building first
       const { data: gws } = await supabase
@@ -100,7 +104,11 @@ export function AddVirtualDeviceForm() {
         is_virtual: true,
         status: 'normal',
       })
-      if (err) { setError(err.message); setLoading(false); return }
+      if (err) {
+        setError(err.message)
+        setLoading(false)
+        return
+      }
     } else {
       const { error: err } = await supabase.from('alarms').insert({
         building_id: buildingId,
@@ -109,7 +117,11 @@ export function AddVirtualDeviceForm() {
         is_virtual: true,
         status: 'normal',
       })
-      if (err) { setError(err.message); setLoading(false); return }
+      if (err) {
+        setError(err.message)
+        setLoading(false)
+        return
+      }
     }
 
     setSuccess(`Dispositivo virtual criado com sucesso! S/N: ${serial}`)
