@@ -12,7 +12,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.3"
+    "@supabase/supabase-js": "^2.39.3",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
