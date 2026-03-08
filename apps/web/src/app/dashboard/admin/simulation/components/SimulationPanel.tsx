@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Radio,
@@ -81,6 +81,80 @@ export function SimulationPanel({ gateways, detectors, recentEvents: initialEven
   const [events, setEvents] = useState<SimEventRow[]>(initialEvents)
   const [sending, setSending] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Keep local list in sync when the server re-renders with fresh data
+  useEffect(() => {
+    setEvents(initialEvents)
+  }, [initialEvents])
+
+  // Subscribe to sim_events for realtime INSERT and UPDATE
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel('sim-events-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sim_events' },
+        (payload) => {
+          const row = payload.new as {
+            id: string
+            device_type: string
+            device_eui: string | null
+            event_type: string
+            status: string
+            error_message: string | null
+            created_at: string
+            processed_at: string | null
+          }
+          setEvents((prev) => {
+            // Avoid duplicates (may already be prepended optimistically)
+            if (prev.some((e) => e.id === row.id)) return prev
+            return [
+              {
+                id: row.id,
+                deviceType: row.device_type as 'gateway' | 'detector' | 'alarm',
+                deviceEui: row.device_eui,
+                eventType: row.event_type,
+                status: row.status as 'pending' | 'processing' | 'done' | 'error',
+                errorMessage: row.error_message,
+                createdAt: row.created_at,
+                processedAt: row.processed_at,
+              },
+              ...prev.slice(0, 29),
+            ]
+          })
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sim_events' },
+        (payload) => {
+          const row = payload.new as {
+            id: string
+            status: string
+            error_message: string | null
+            processed_at: string | null
+          }
+          setEvents((prev) =>
+            prev.map((e) =>
+              e.id === row.id
+                ? {
+                    ...e,
+                    status: row.status as 'pending' | 'processing' | 'done' | 'error',
+                    errorMessage: row.error_message,
+                    processedAt: row.processed_at,
+                  }
+                : e,
+            ),
+          )
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })

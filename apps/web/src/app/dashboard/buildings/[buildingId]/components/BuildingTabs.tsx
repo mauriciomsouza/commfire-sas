@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useMemo, type Dispatch, type SetStateAction } from 'react'
+import { useState, useRef, useMemo, useEffect, type Dispatch, type SetStateAction } from 'react'
 import Link from 'next/link'
 import {
   Plus,
@@ -175,20 +175,72 @@ export function BuildingTabs({
     [detectors],
   )
 
+  const [localDetectors, setLocalDetectors] = useState(detectors)
+  const [localGateways, setLocalGateways] = useState(gateways)
+  const [localAlarms, setLocalAlarms] = useState(alarms)
+  const [localEvents, setLocalEvents] = useState<Event[]>(events)
+
+  // Keep localEvents in sync when server re-renders with fresh data
+  useEffect(() => {
+    setLocalEvents(events)
+  }, [events])
+
+  // Subscribe to device_events for realtime updates on the Eventos tab
+  useEffect(() => {
+    const gatewayIds = gateways.map((g) => g.id)
+    if (gatewayIds.length === 0) return
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`building-events-${buildingId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'device_events',
+          filter: `gateway_id=in.(${gatewayIds.join(',')})`,
+        },
+        (payload) => {
+          const row = payload.new as {
+            id: string
+            type: string
+            received_at: string
+            payload: Record<string, unknown>
+            detector_id: string | null
+            gateway_id: string | null
+          }
+          setLocalEvents((prev) => [
+            {
+              id: row.id,
+              type: row.type,
+              received_at: row.received_at,
+              payload: row.payload ?? {},
+              detector_id: row.detector_id,
+              gateway_id: row.gateway_id,
+            },
+            ...prev.slice(0, 199),
+          ])
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [buildingId, gateways])
+
   const filteredEvents = useMemo(
     () =>
       activeFilter
-        ? events.filter((evt) =>
+        ? localEvents.filter((evt) =>
             activeFilter.type === 'gateway'
               ? evt.gateway_id === activeFilter.id
               : evt.detector_id === activeFilter.id,
           )
-        : events,
-    [events, activeFilter],
+        : localEvents,
+    [localEvents, activeFilter],
   )
-  const [localDetectors, setLocalDetectors] = useState(detectors)
-  const [localGateways, setLocalGateways] = useState(gateways)
-  const [localAlarms, setLocalAlarms] = useState(alarms)
 
   return (
     <div>
