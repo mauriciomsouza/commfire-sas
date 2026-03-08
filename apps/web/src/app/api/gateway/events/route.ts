@@ -4,9 +4,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 /**
  * POST /api/gateway/events
- * Receives device events from gateway runtimes and inserts them into Supabase device_events.
+ * Receives device events (from the sim-server) and inserts them into Supabase device_events.
  *
- * Expected body (DeviceEvent from @commfire/domain buildDeviceEvent):
+ * Expected body:
  *   { id, detectorId (EUI), gatewayId (EUI), type, payload, receivedAt, processedAt }
  */
 export async function POST(request: NextRequest) {
