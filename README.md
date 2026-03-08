@@ -1,24 +1,24 @@
 # Commfire SAS
 
-IoT SaaS platform for wireless fire detection systems using LoRa mesh networks.
+IoT SaaS platform for wireless fire detection systems.
 
 ## Architecture
 
 ```
 commfire-sas/
 ├── apps/
-│   ├── web/            # Next.js 15 dashboard (SaaS onboarding + monitoring)
-│   ├── gateway/        # Device ingestion runtime (LoRa mesh → backend)
-│   └── detector-sim/   # Virtual LoRa detector simulator
+│   ├── web/            # Next.js 15 dashboard (SaaS admin + customer portal)
+│   └── sim-server/     # Simulation server (sends virtual device events to the web API)
 ├── packages/
 │   ├── types/          # Shared TypeScript types
-│   ├── protocol/       # LoRa mesh frame codec (encode/decode + CRC-16)
-│   ├── domain/         # Business logic (topology, event processing, battery)
-│   ├── simulation/     # Virtual device utilities (VirtualDetector, VirtualMesh)
 │   └── ui/             # Shared React component library (Tailwind CSS)
 └── supabase/
     └── migrations/     # Postgres schema + RLS policies
 ```
+
+> **Note on hardware / LoRa:** The physical gateway runtime and LoRa mesh protocol implementation
+> are not part of this codebase right now. We'll tackle hardware integration once the web platform
+> and business processes are solid.
 
 ## Tech Stack
 
@@ -28,8 +28,6 @@ commfire-sas/
 | Web app | Next.js 15 (App Router), Tailwind CSS, TypeScript |
 | Auth & DB | Supabase (Auth, Postgres, Realtime, Storage) |
 | Billing | Stripe |
-| Gateway runtime | Node.js / TypeScript |
-| Device protocol | Custom LoRa mesh binary protocol (CRC-16/CCITT) |
 
 ## Account types
 
@@ -61,8 +59,7 @@ Copy the example files and fill in your values:
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
-cp apps/gateway/.env.example apps/gateway/.env
-cp apps/detector-sim/.env.example apps/detector-sim/.env
+cp apps/sim-server/.env.example apps/sim-server/.env   # if running sim-server locally
 ```
 
 ### Database setup
@@ -74,31 +71,24 @@ Run the migration against your Supabase project:
 supabase db push
 
 # Or directly in the Supabase SQL editor:
-# Copy supabase/migrations/001_initial_schema.sql
+# Copy the files under supabase/migrations/ in order
 ```
 
 ### Development
 
 ```bash
-# Start all apps in parallel
+# Start web + sim-server in parallel
 pnpm dev
 
 # Or start individually
 pnpm --filter @commfire/web dev
-pnpm --filter @commfire/gateway dev
-pnpm --filter @commfire/detector-sim dev
+pnpm --filter @commfire/sim-server dev
 ```
 
 ### Build
 
 ```bash
 pnpm build
-```
-
-### Tests
-
-```bash
-pnpm test
 ```
 
 ## Apps
@@ -110,67 +100,30 @@ Next.js 15 dashboard with:
 - **Auth** – sign in / register via Supabase Auth
 - **Dashboard** – building overview with live status
 - **Buildings** – CRUD for buildings, floors, gateways, detectors
-- **Floor plan viewer** – SVG overlay with detector positions, mesh links, battery / signal badges
-- **Gateway API routes** – `/api/gateway/events`, `/api/gateway/heartbeat/gateway`, `/api/gateway/heartbeat/detector`
+- **Floor plan viewer** – SVG overlay with detector positions, battery / signal badges
+- **Admin panel** – customer management, virtual device management, simulation panel
+- **API routes** – `/api/gateway/events`, `/api/gateway/heartbeat/gateway`, `/api/gateway/heartbeat/detector` (consumed by sim-server)
 
-### Gateway (`apps/gateway`)
+### Simulation Server (`apps/sim-server`)
 
-Node.js runtime that:
-1. Listens on a TCP port for binary mesh frames from physical (or virtual) LoRa detectors
-2. Decodes frames using `@commfire/protocol`
-3. Maintains an in-memory mesh topology using `@commfire/domain`
-4. Forwards events and heartbeats to the backend API via HTTPS
-5. Periodically sends its own heartbeat to the backend
-6. Prunes stale detectors that have not sent a heartbeat within the configured threshold
+Node.js service that:
+1. Reads virtual devices (gateways and detectors) from Supabase (`is_virtual = true`)
+2. Sends periodic heartbeats to keep them appearing online in the dashboard
+3. Polls the `sim_events` table for manual event commands fired from the admin simulation panel
+4. Dispatches events (alarm, fault, tamper, etc.) via the web API
 
-**Environment variables:** see `apps/gateway/.env.example`
-
-### Detector Simulator (`apps/detector-sim`)
-
-Interactive CLI that:
-1. Creates a pre-wired virtual mesh using `@commfire/simulation`
-2. Connects to a gateway via TCP
-3. Streams heartbeats and join frames on a configurable interval
-4. Accepts interactive commands to trigger alarms, faults, and other events
-
-```
-Commands:
-  alarm <eui>   – trigger alarm on detector
-  clear <eui>   – clear alarm on detector
-  fault <eui>   – trigger fault on detector
-  list          – list all virtual detectors
-  quit          – stop simulator
-```
+**Required environment variables:**
+- `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`)
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `BACKEND_URL` – base URL of the web app (default `http://localhost:3000`)
+- `HEARTBEAT_INTERVAL_MS` – heartbeat frequency in ms (default `30000`)
+- `POLL_INTERVAL_MS` – sim_events poll frequency in ms (default `5000`)
 
 ## Packages
 
 ### `@commfire/types`
 
-All shared TypeScript interfaces: `UserProfile`, `Customer`, `Building`, `Floor`, `Gateway`, `Detector`, `DeviceEvent`, `MeshTopology`, `Subscription`, `BillingPlan`, and more.
-
-### `@commfire/protocol`
-
-Binary frame codec for the Commfire LoRa mesh protocol:
-- Frame structure: type (1B) + src EUI (8B) + dst EUI (8B) + hop count (1B) + seq (2B) + payload length (2B) + payload + CRC-16/CCITT (2B)
-- `encodeFrame` / `decodeFrame`
-- Payload encoders/decoders for: heartbeat, alarm, fault, tamper, low battery, join, mesh update
-
-### `@commfire/domain`
-
-Business logic:
-- `TopologyManager` – in-memory mesh topology (upsert, mark offline, remove)
-- `classifyBattery` – millivolt → battery level string
-- `statusFromBitmask` – heartbeat bitmask → detector status
-- `frameTypeToEventType` – frame type byte → event type string
-- `buildDeviceEvent` – creates a `DeviceEvent` from raw frame data
-- `isStale` – checks if a detector has missed heartbeats
-
-### `@commfire/simulation`
-
-Virtual device simulation:
-- `VirtualDetector` – emits binary-encoded mesh frames (heartbeat, alarm, fault, etc.)
-- `VirtualMesh` – manages a collection of virtual detectors with timers
-- `createDemoMesh` – pre-wired 5-detector demo topology
+All shared TypeScript interfaces: `UserProfile`, `Customer`, `Building`, `Floor`, `Gateway`, `Detector`, `DeviceEvent`, `Subscription`, `BillingPlan`, and more.
 
 ### `@commfire/ui`
 
@@ -190,9 +143,10 @@ Key tables with Row Level Security (RLS):
 | `buildings` | Physical buildings owned by customers |
 | `subscriptions` | Per-building Stripe subscriptions |
 | `floors` | Building floors with optional floor plan image |
-| `gateways` | LoRa gateways; position on floor plan |
-| `detectors` | LoRa detectors; position, battery, RSSI, mesh depth |
-| `mesh_links` | Topology edges between detectors |
+| `gateways` | Gateways registered to a building |
+| `detectors` | Detectors linked to a gateway |
+| `alarms` | Alarm panels linked to a building |
 | `device_events` | Alarms, faults, heartbeats, and other device events |
+| `sim_events` | Pending simulation commands dispatched by the admin panel |
 
 Platform admins bypass RLS; customers see only their own data.

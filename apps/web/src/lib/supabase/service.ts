@@ -2,8 +2,8 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Creates a Supabase client authenticated with the service role key.
- * This bypasses RLS and is intended only for server-side API routes that use
- * their own authentication mechanism (e.g., GATEWAY_SHARED_SECRET).
+ * This bypasses RLS and is intended only for trusted server-side API routes
+ * (e.g., gateway event ingestion endpoints).
  *
  * Never expose this client or the service role key to the browser.
  */
