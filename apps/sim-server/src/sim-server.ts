@@ -34,8 +34,13 @@ interface SimEvent {
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? ''
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
+  process.env.SUPABASE_URL ??
+  'https://lcamonkpwhnuhpetgjyc.supabase.co'
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjYW1vbmtwd2hudWhwZXRnanljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjgyOTQ1OSwiZXhwIjoyMDg4NDA1NDU5fQ.afg7ksP_0w8HtUfRDmGza_mYhEvcod46N01RzyG-s4Q'
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:3000'
 const HEARTBEAT_INTERVAL_MS = Number(process.env.HEARTBEAT_INTERVAL_MS ?? 30_000)
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS ?? 5_000)
@@ -117,13 +122,12 @@ export class SimServer {
 
   private async loadVirtualDevices(): Promise<void> {
     const [gwResult, detResult] = await Promise.all([
-      this.supabase
-        .from('gateways')
-        .select('id, eui, name, firmware')
-        .eq('is_virtual', true),
+      this.supabase.from('gateways').select('id, eui, name, firmware').eq('is_virtual', true),
       this.supabase
         .from('detectors')
-        .select('id, eui, name, type, battery_voltage, rssi, snr, status, parent_eui, hop_count, gateways(eui)')
+        .select(
+          'id, eui, name, type, battery_voltage, rssi, snr, status, parent_eui, hop_count, gateways(eui)'
+        )
         .eq('is_virtual', true),
     ])
 
@@ -177,9 +181,9 @@ export class SimServer {
   }
 
   private async sendDetectorHeartbeat(det: VirtualDetector): Promise<void> {
-    const batteryVoltage = det.battery_voltage ?? (3.5 + Math.random() * 0.3)
+    const batteryVoltage = det.battery_voltage ?? 3.5 + Math.random() * 0.3
     const rssi = det.rssi ?? -(60 + Math.random() * 25)
-    const snr = det.snr ?? (4 + Math.random() * 8)
+    const snr = det.snr ?? 4 + Math.random() * 8
 
     await this.post('/api/gateway/heartbeat/detector', {
       detectorEui: det.eui,
@@ -218,10 +222,7 @@ export class SimServer {
 
   private async processSimEvent(event: SimEvent): Promise<void> {
     // Mark as processing
-    await this.supabase
-      .from('sim_events')
-      .update({ status: 'processing' })
-      .eq('id', event.id)
+    await this.supabase.from('sim_events').update({ status: 'processing' }).eq('id', event.id)
 
     try {
       await this.dispatchEvent(event)
@@ -232,7 +233,9 @@ export class SimServer {
         .update({ status: 'done', processed_at: new Date().toISOString() })
         .eq('id', event.id)
 
-      console.log(`[sim-server] processed sim_event ${event.id}: ${event.event_type} on ${event.device_eui ?? event.device_id}`)
+      console.log(
+        `[sim-server] processed sim_event ${event.id}: ${event.event_type} on ${event.device_eui ?? event.device_id}`
+      )
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       console.error(`[sim-server] failed to process sim_event ${event.id}:`, message)
@@ -278,7 +281,8 @@ export class SimServer {
           name: '',
           type: 'smoke',
           gateway_eui: gatewayEui,
-          battery_voltage: (payload.batteryVoltage as number | null) ?? det?.battery_voltage ?? null,
+          battery_voltage:
+            (payload.batteryVoltage as number | null) ?? det?.battery_voltage ?? null,
           rssi: (payload.rssi as number | null) ?? det?.rssi ?? null,
           snr: (payload.snr as number | null) ?? det?.snr ?? null,
           status: (payload.status as string | null) ?? det?.status ?? 'normal',
