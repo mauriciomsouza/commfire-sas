@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Flame, LayoutDashboard, Building2, Settings, LogOut, ShieldCheck, Users, Cpu, FlaskConical } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, LogOut, ShieldCheck, Users, Cpu, FlaskConical } from 'lucide-react'
+import { CommfireIcon } from '@/components/commfire-logo'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Dashboard' }
@@ -50,9 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Sidebar */}
       <nav className="flex w-64 flex-col border-r border-gray-200 bg-white px-4 py-6">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-600">
-            <Flame className="h-5 w-5 text-white" strokeWidth={2} />
-          </div>
+          <CommfireIcon className="h-8 w-8" />
           <span className="text-lg font-bold text-gray-900">Commfire</span>
         </Link>
 

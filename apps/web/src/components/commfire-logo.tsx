@@ -1,0 +1,37 @@
+interface CommfireIconProps {
+  className?: string
+  title?: string
+}
+
+export function CommfireIcon({ className, title }: CommfireIconProps) {
+  const hasTitle = Boolean(title)
+  return (
+    <svg
+      viewBox="0 0 200 276"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden={hasTitle ? undefined : true}
+      role={hasTitle ? 'img' : undefined}
+      aria-label={hasTitle ? title : undefined}
+      focusable="false"
+    >
+      {hasTitle && <title>{title}</title>}
+
+      {/* Left prong – narrow parallelogram leaning upper-right */}
+      <polygon fill="#C82222" points="24,178 54,170 88,52 58,60" />
+
+      {/* Right prong – tall, wider, with notched top-left corner */}
+      <polygon fill="#C82222" points="108,176 156,188 156,8 126,0 108,20" />
+
+      {/* Diamond frame – outer diamond minus inner diamond (evenodd) */}
+      <path
+        fill="#C82222"
+        fillRule="evenodd"
+        d="M 0,220 L 100,176 L 200,220 L 100,276 Z M 28,220 L 100,197 L 172,220 L 100,253 Z"
+      />
+
+      {/* Gold left-pointing chevron inside the diamond */}
+      <polygon fill="#F5A623" points="38,219 77,205 77,214 57,220 77,226 77,235 38,221" />
+    </svg>
+  )
+}

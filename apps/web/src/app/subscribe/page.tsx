@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Flame, Minus, Plus, Radio, Bell, ArrowRight, Shield } from 'lucide-react'
+import { Minus, Plus, Radio, Bell, ArrowRight, Shield, Flame } from 'lucide-react'
+import { CommfireIcon } from '@/components/commfire-logo'
 
 const PRICES = {
   detector: 60,
@@ -93,9 +94,7 @@ export default function SubscribePage() {
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-600">
-              <Flame className="h-5 w-5 text-white" strokeWidth={2} />
-            </div>
+            <CommfireIcon className="h-9 w-9" />
             <span className="text-lg font-bold text-gray-900">
               Commfire <span className="text-orange-600">SAS</span>
             </span>

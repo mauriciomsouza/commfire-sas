@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Flame } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { CommfireIcon } from '@/components/commfire-logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,8 +34,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-orange-600">
-            <Flame className="h-6 w-6" /> Commfire SAS
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <CommfireIcon className="h-10 w-10" />
+            Commfire <span className="text-orange-600">SAS</span>
           </Link>
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>

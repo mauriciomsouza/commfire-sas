@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Flame, Radio, Building2, Shield, Wifi, Bell, ArrowRight, CheckCircle } from 'lucide-react'
+import { Radio, Building2, Shield, Wifi, Bell, ArrowRight, CheckCircle, Flame } from 'lucide-react'
+import { CommfireIcon } from '@/components/commfire-logo'
 
 export default function HomePage() {
   return (
@@ -8,9 +9,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-600">
-              <Flame className="h-5 w-5 text-white" strokeWidth={2} />
-            </div>
+            <CommfireIcon className="h-9 w-9" />
             <span className="text-lg font-bold text-gray-900">
               Commfire <span className="text-orange-600">SAS</span>
             </span>
@@ -449,9 +448,7 @@ export default function HomePage() {
       <footer className="border-t border-gray-200 bg-white px-6 py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600">
-              <Flame className="h-4 w-4 text-white" strokeWidth={2} />
-            </div>
+            <CommfireIcon className="h-7 w-7" />
             <span className="font-bold text-gray-900">
               Commfire <span className="text-orange-600">SAS</span>
             </span>
